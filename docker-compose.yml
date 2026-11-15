@@ -1,0 +1,41 @@
+services:
+  browser-use-webui:
+    image: smanx/browser-use-web-ui:latest
+    container_name: linkedin-job-scout
+    ports:
+      - "127.0.0.1:7788:7788"   # No-Code Kontrol Paneli (Web UI)
+      - "127.0.0.1:6080:6080"   # Canlı Sanal Ekran (noVNC)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    environment:
+      - KEEP_BROWSER_OPEN=true
+      - IN_DOCKER=true
+      - USE_OWN_BROWSER=true
+      - BROWSER_PATH=/ms-browsers/chromium-1248/chrome-linux64/chrome
+      - BROWSER_USER_DATA=/app/data/chrome_user_data
+      - CHROME_PERSISTENT_SESSION=true
+      - CHROME_USER_DATA=/app/data/chrome_user_data
+      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-false}
+      - VNC_PASSWORD=${VNC_PASSWORD:-guvenlisifre123}
+      - RESOLUTION=${RESOLUTION:-1920x1080x24}
+      - DISPLAY=:99
+      # Mod A: Doğrudan Ollama Cloud API (OpenAI-Uyumlu Uç Nokta)
+      - OPENAI_ENDPOINT=${OPENAI_ENDPOINT:-https://ollama.com/v1}
+      - OPENAI_API_KEY=${OLLAMA_API_KEY:-}
+      # Mod B: Yerel Ollama Köprüsü / Daemon
+      - DEFAULT_LLM=ollama
+      - OLLAMA_ENDPOINT=${OLLAMA_ENDPOINT:-http://host.docker.internal:11434}
+      - OLLAMA_HOST=${OLLAMA_ENDPOINT:-http://host.docker.internal:11434}
+      - DEFAULT_LLM_MODEL=${DEFAULT_LLM_MODEL:-gemma4:12b}
+    volumes:
+      # Yalnızca 3 izole yol bağlanır; ana bilgisayar dosyalarına erişim yoktur.
+      - ./data/browser_profile:/app/data/chrome_user_data:rw
+      - ./data/saved_jobs:/app/data/saved_jobs:rw
+      - ./config/candidate_profile.md:/app/data/candidate_profile.md:ro
+      - ./config/AGENT_TASK_PROMPT.md:/app/data/AGENT_TASK_PROMPT.md:ro
+    shm_size: "2gb"
+    security_opt:
+      - "no-new-privileges:true"
+    restart: unless-stopped

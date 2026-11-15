@@ -1,0 +1,23 @@
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Browser profile & session data (contains cookies, cache, and login state)
+data/browser_profile/
+
+# Logs & temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
