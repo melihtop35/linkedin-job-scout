@@ -1,35 +1,32 @@
-# LinkedIn Job Scout — Kodsuz Kullanım Kılavuzu
+# AI Job Scout — LinkedIn & Kariyer.net Zincirleme Kullanım Kılavuzu
 
-Bu sistem, bilgisayarınızdaki kişisel tarayıcı profillerine veya dosyalarınıza **hiçbir erişimi olmayan** izole bir Docker sanal tarayıcısı içinde çalışır. LinkedIn iş ilanlarını kriterlerinize göre tarar, uygun olanları LinkedIn hesabınızda **"Kaydet (Save)"** yapar ve yerel rapor dosyanıza işler — **asla iş başvurusu yapmaz.**
+Bu sistem, **tek bir merkezden (`http://localhost:7788` ve `http://localhost:6080`)** hem **LinkedIn** hem de **Kariyer.net** iş ilanlarını zincirleme olarak tarar.
 
----
-
-## Hızlı Başlangıç (3 Adım)
-
-### Adım 1: API Anahtarını `.env` Dosyasına Yapıştırın
-1. Proje klasöründeki `.env` dosyasını Not Defteri (Notepad) veya herhangi bir metin düzenleyici ile açın.
-2. [ollama.com/settings/keys](https://ollama.com/settings/keys) adresinden aldığınız API anahtarını `OLLAMA_API_KEY=` satırının karşısına yapıştırın ve dosyayı kaydedin.
-   - *(Opsiyonel — Mod B)* Bilgisayarınızda yerel Ollama kuruluysa ve `ollama signin` yaptıysanız, Web UI ayarlarından yerel köprü (`http://host.docker.internal:11434`) ile `gemma4:cloud` veya `gemma4:31b-cloud` etiketini de kullanabilirsiniz.
-3. İsteğe bağlı olarak `config/candidate_profile.md` dosyasını açıp aradığınız pozisyonları, yetenekleri ve şehir/uzaktan çalışma tercihlerinizi düzenleyin.
-
-### Adım 2: Sistemi Tek Tıkla Başlatın
-- **Windows:** `BASLAT.bat` dosyasına çift tıklayın. *(Docker Desktop'ın açık olduğundan emin olun.)*
-- **macOS / Linux:** Terminalde `./start.sh` komutunu çalıştırın.
-
-5 saniye içinde tarayıcınızda otomatik olarak iki sekme açılacaktır:
-1. **Ajan Kontrol Paneli (Web UI):** `http://localhost:7788`
-2. **Canlı Sanal Tarayıcı (noVNC):** `http://localhost:6080`
-
-### Adım 3: LinkedIn'e Giriş Yapın ve Görevi Başlatın
-1. **İlk kullanımda:** `http://localhost:6080` (noVNC) sekmesine geçin, `.env` dosyasındaki `VNC_PASSWORD` şifresini (varsayılan: `guvenlisifre123`) girin ve sanal tarayıcıda LinkedIn hesabınıza giriş yapın.
-   - Oturum çerezleriniz izole `data/browser_profile/` klasöründe saklanır; sonraki çalıştırmalarda tekrar şifre girmeniz gerekmez.
-2. **LLM Ayarları (`http://localhost:7788`):**
-   - **Mod A (Önerilen — Doğrudan Ollama Cloud API):** Sağlayıcı olarak **OpenAI** (veya OpenAI-Uyumlu), Base URL olarak `https://ollama.com/v1`, API Key olarak `OLLAMA_API_KEY` değerinizi, Model olarak `gemma4:31b` (veya `gemma4`) seçin.
-   - **Mod B (Yerel Ollama Köprüsü):** Sağlayıcı olarak **Ollama**, Base URL olarak `http://host.docker.internal:11434`, Model olarak `gemma4:cloud`, `gemma4:31b-cloud` veya yerel `gemma4:e4b` seçin.
-3. **Görevi Başlatın:** `config/AGENT_TASK_PROMPT.md` dosyasının içindeki komut metnini kopyalayıp Web UI'daki **Task / Görev** kutusuna yapıştırın ve **Run / Çalıştır** butonuna basın.
+- **LinkedIn'de uygun bulunan (`>= 75` puan) ilanlar:** LinkedIn hesabınızda **Kaydet** yapılır ve `linkedin-job-scout/data/saved_jobs/saved_jobs.md` dosyasına yazılır.
+- **Kariyer.net'te uygun bulunan (`>= 75` puan) ilanlar:** Kariyer.net hesabınızda **Kaydet** yapılır ve `kariyer-job-scout/data/saved_jobs/saved_jobs.md` dosyasına yazılır.
+- **Asla iş başvurusu yapmaz.**
 
 ---
 
-## Çıktılar ve Sistemi Durdurma
-- **Kaydedilen İlanlar:** Ajanın 75+ uyum puanı verip kaydettiği tüm ilanlar `data/saved_jobs/saved_jobs.md` dosyasına tablo olarak eklenir.
-- **Durdurma:** İşiniz bittiğinde **Windows** için `DURDUR.bat` dosyasına çift tıklayın (**macOS/Linux** için `./stop.sh`).
+## Zincir Sıralamasını Nasıl Belirlersiniz?
+
+### Yöntem 1: Web Arayüzünden Tek Tıkla (En Kolay)
+`http://localhost:7788` adresindeki **Browser Use Agent** sekmesinde, görev kutusunun hemen üstünde yer alan **"🔗 Otomasyon Zincir Sıralaması"** kutusundan istediğiniz modu seçebilirsiniz:
+1. **`LinkedIn ➔ Kariyer.net (Zincir)`** *(Varsayılan — Önce LinkedIn biter, ardından otomatik Kariyer.net başlar)*
+2. **`Kariyer.net ➔ LinkedIn (Zincir)`** *(Önce Kariyer.net biter, ardından otomatik LinkedIn başlar)*
+3. **`Sadece LinkedIn`**
+4. **`Sadece Kariyer.net`**
+
+Hemen yanındaki **"📊 Platform Başına İlan Sayısı"** kaydırıcısından her platformda kaç ilan inceleneceğini (varsayılan: `20` ilan LinkedIn + `20` ilan Kariyer.net = toplam `40` ilan) seçebilirsiniz.
+
+### Yöntem 2: Hangi Klasördeki `BASLAT.bat` Dosyasını Çalıştırdığınıza Göre
+- `linkedin-job-scout\BASLAT.bat` çalıştırıldığında varsayılan sıra **`LinkedIn ➔ Kariyer.net`** olarak açılır.
+- `kariyer-job-scout\BASLAT.bat` çalıştırıldığında varsayılan sıra **`Kariyer.net ➔ LinkedIn`** olarak açılır.
+- Her ikisi de aynı tek portu (`7788` ve `6080`) ve aynı ortak tarayıcı profilini kullanır.
+
+---
+
+## İlk Kurulumda Oturum Açma (`http://localhost:6080`)
+1. `http://localhost:6080` (noVNC) sekmesini açın (Şifre: `guvenlisifre123`).
+2. Sanal tarayıcıda hem **LinkedIn** hem de **Kariyer.net** hesabınıza bir kez giriş yapın.
+3. Çerezler ortak profilde saklandığı için sonraki çalıştırmalarda tekrar giriş yapmanız gerekmez.

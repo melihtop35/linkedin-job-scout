@@ -3,8 +3,8 @@ services:
     image: smanx/browser-use-web-ui:latest
     container_name: linkedin-job-scout
     ports:
-      - "127.0.0.1:7788:7788"   # No-Code Kontrol Paneli (Web UI)
-      - "127.0.0.1:6080:6080"   # Canlı Sanal Ekran (noVNC)
+      - "127.0.0.1:7788:7788"   # Tek Merkez Kontrol Paneli (Web UI - LinkedIn & Kariyer.net Zinciri)
+      - "127.0.0.1:6080:6080"   # Tek Merkez Canlı Sanal Ekran (noVNC)
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file:
@@ -21,6 +21,9 @@ services:
       - VNC_PASSWORD=${VNC_PASSWORD:-guvenlisifre123}
       - RESOLUTION=${RESOLUTION:-1920x1080x24}
       - DISPLAY=:99
+      # Zincir Sırası: "linkedin,kariyer" (Varsayılan) veya "kariyer,linkedin"
+      - CHAIN_ORDER=${CHAIN_ORDER:-linkedin,kariyer}
+      - JOBS_PER_PLATFORM=${JOBS_PER_PLATFORM:-20}
       # Mod A: Doğrudan Ollama Cloud API (OpenAI-Uyumlu Uç Nokta)
       - OPENAI_ENDPOINT=${OPENAI_ENDPOINT:-https://ollama.com/v1}
       - OPENAI_API_KEY=${OLLAMA_API_KEY:-}
@@ -30,11 +33,19 @@ services:
       - OLLAMA_HOST=${OLLAMA_ENDPOINT:-http://host.docker.internal:11434}
       - DEFAULT_LLM_MODEL=${DEFAULT_LLM_MODEL:-gemma4:12b}
     volumes:
-      # Yalnızca 3 izole yol bağlanır; ana bilgisayar dosyalarına erişim yoktur.
+      # Ortak tarayıcı profili + LinkedIn ve Kariyer.net ayrı kayıt klasörleri + Zincir Kontrolcü
       - ./data/browser_profile:/app/data/chrome_user_data:rw
-      - ./data/saved_jobs:/app/data/saved_jobs:rw
+      - ./data/saved_jobs:/app/data/saved_jobs_linkedin:rw
+      - ../kariyer-job-scout/data/saved_jobs:/app/data/saved_jobs_kariyer:rw
       - ./config/candidate_profile.md:/app/data/candidate_profile.md:ro
       - ./config/AGENT_TASK_PROMPT.md:/app/data/AGENT_TASK_PROMPT.md:ro
+      - ./src/controller/custom_controller.py:/app/src/controller/custom_controller.py:ro
+      - ./src/agent/browser_use/browser_use_agent.py:/app/src/agent/browser_use/browser_use_agent.py:ro
+      - ./src/utils/config.py:/app/src/utils/config.py:ro
+      - ./src/utils/llm_provider.py:/app/src/utils/llm_provider.py:ro
+      - ./src/webui/components/agent_settings_tab.py:/app/src/webui/components/agent_settings_tab.py:ro
+      - ./src/webui/components/browser_settings_tab.py:/app/src/webui/components/browser_settings_tab.py:ro
+      - ./src/webui/components/browser_use_agent_tab.py:/app/src/webui/components/browser_use_agent_tab.py:ro
     shm_size: "2gb"
     security_opt:
       - "no-new-privileges:true"
