@@ -131,7 +131,3 @@ Bu repository için özel lisans bilgisi görünmemektedir. Kendi kullanımını
 ## İletişim / Kullanım Desteği
 
 Detaylı kullanım notları için `KULLANIM_KILAVUZU.md` dosyasına bakabilirsiniz.
-
----
-
-Bu README, projeyi daha kolay kurup çalıştırmak için temel kullanım bilgilerini kapsar. Daha ileri düzey bir sürüm isterseniz, İngilizce versiyon, ekran görüntüsü bölümü veya kurulum akışı eklenebilir.
